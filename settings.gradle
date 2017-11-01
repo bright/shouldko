@@ -1,0 +1,19 @@
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        maven { url = ArtifactRepositoryContainer.MAVEN_CENTRAL_URL }
+    }
+    resolutionStrategy {
+        eachPlugin {
+            if (requested.id.id == 'org.junit.platform.gradle.plugin') {
+                useModule("org.junit.platform:junit-platform-gradle-plugin:${requested.version}")
+            }
+        }
+    }
+}
+
+rootProject.name = 'shouldko'
+
+include ':core'
+include ':hamcrest'
+

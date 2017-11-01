@@ -1,0 +1,38 @@
+buildscript {
+    ext.kotlin_version = "1.1.51"
+    ext.jupiter_version = "5.0.1"
+}
+
+plugins {
+    id "nebula.dependency-lock" version "4.9.5"
+    id "org.jetbrains.kotlin.jvm" version "1.1.51"
+    id "org.junit.platform.gradle.plugin" version "1.0.1"
+}
+
+allprojects {
+    apply plugin: "kotlin"
+
+    repositories {
+        jcenter()
+    }
+
+    dependencies {
+        compile "org.jetbrains.kotlin:kotlin-stdlib-jre8:$kotlin_version"
+
+        testCompile("org.junit.jupiter:junit-jupiter-api:$jupiter_version")
+        testRuntime("org.junit.jupiter:junit-jupiter-engine:$jupiter_version")
+    }
+
+    compileKotlin {
+        kotlinOptions.jvmTarget = "1.8"
+    }
+    compileTestKotlin {
+        kotlinOptions.jvmTarget = "1.8"
+    }
+}
+
+group "pl.miensol.shoudko"
+version "1.0-SNAPSHOT"
+
+junitPlatform {
+}
