@@ -36,9 +36,6 @@ subprojects {
     compileTestKotlin {
         kotlinOptions.jvmTarget = "1.8"
     }
-
-    junitPlatform {
-    }
 }
 
 group "pl.miensol.shoudko"
