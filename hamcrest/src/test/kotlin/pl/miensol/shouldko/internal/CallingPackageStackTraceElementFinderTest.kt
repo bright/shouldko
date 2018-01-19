@@ -4,6 +4,7 @@ import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers.equalTo
 import org.hamcrest.Matchers.nullValue
 import org.junit.jupiter.api.Test
+import pl.miensol.shouldko.shouldEqual
 
 internal class CallingPackageStackTraceElementFinderTest {
     private fun finder(matcher: (String) -> Boolean) =
@@ -22,7 +23,7 @@ internal class CallingPackageStackTraceElementFinderTest {
 
         val frame = finder({ true })(stackTrace)
 
-        assertThat(frame, equalTo(firstFrameOutsideOfShouldKo))
+        frame.shouldEqual(firstFrameOutsideOfShouldKo)
     }
 
     @Test
@@ -41,7 +42,7 @@ internal class CallingPackageStackTraceElementFinderTest {
 
         val frame = finder(isNotCustomTestHelper)(stackTrace)
 
-        assertThat(frame, equalTo(firstFrameOutsideOfShouldKo))
+        frame.shouldEqual(firstFrameOutsideOfShouldKo)
     }
 
     @Test
@@ -54,6 +55,6 @@ internal class CallingPackageStackTraceElementFinderTest {
 
         val frame = finder({true})(stackTrace)
 
-        assertThat(frame, nullValue())
+        frame.shouldEqual(null)
     }
 }

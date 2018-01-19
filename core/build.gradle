@@ -1,3 +1,0 @@
-dependencies {
-    testImplementation group: 'org.hamcrest', name: 'hamcrest-library', version: project.hamcrest_version
-}
