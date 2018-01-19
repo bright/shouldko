@@ -33,6 +33,8 @@ allprojects {
     dependencies {
         testRuntime("org.junit.jupiter:junit-jupiter-engine:$jupiter_version")
     }
+
+    group "pl.miensol.shouldko"
 }
 
 subprojects {
@@ -59,7 +61,7 @@ subprojects {
 
 apply plugin: 'maven-publish'
 
-group "pl.miensol.shouldko"
+
 
 publishing {
     publications {
