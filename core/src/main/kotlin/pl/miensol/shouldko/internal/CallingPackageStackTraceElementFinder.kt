@@ -1,7 +1,7 @@
 package pl.miensol.shouldko.internal
 
 
-internal class CallingPackageStackTraceElementFinder(val callingPackageMatcher: (String) -> Boolean = { true }) : AssertionStackTraceElementFinder {
+class CallingPackageStackTraceElementFinder(private val callingPackageMatcher: (String) -> Boolean = { true }) : AssertionStackTraceElementFinder {
     override fun invoke(stackTrace: List<StackTraceElement>): StackTraceElement? {
         var reachedShouldKo = false
         stackTrace.forEach { stackTraceElement ->
