@@ -34,7 +34,9 @@ Expected: <true>
      but: was <false>
 ```
 
-## Installation
+## Installation [![Download](https://api.bintray.com/packages/brightinventions/maven/shouldko/images/download.svg) ](https://bintray.com/brightinventions/maven/shouldko/_latestVersion)
+                
+
 
 Register bintray maven repository:
 
@@ -49,6 +51,6 @@ repositories {
 And add 'pl.miensol.shouldko:hamcrest' to your test implementation dependencies:
 
 ```groovy
-compile 'pl.miensol.shouldko:hamcrest:0.1.2'
+compile 'pl.miensol.shouldko:hamcrest:x.y.z'
 ```
 
