@@ -2,6 +2,7 @@ package pl.miensol.shouldko.internal
 
 import org.hamcrest.MatcherAssert.assertThat
 import org.hamcrest.Matchers.equalTo
+import org.hamcrest.Matchers.nullValue
 import org.junit.jupiter.api.Test
 
 internal class CallingPackageStackTraceElementFinderTest {
@@ -41,5 +42,18 @@ internal class CallingPackageStackTraceElementFinderTest {
         val frame = finder(isNotCustomTestHelper)(stackTrace)
 
         assertThat(frame, equalTo(firstFrameOutsideOfShouldKo))
+    }
+
+    @Test
+    fun `cannot find frame without shouldko in stack trace`() {
+        val stackTrace = listOf(
+                StackTraceElement("java.lang.Enum", "toString", null, -1),
+                StackTraceElement("java.lang.Enum", "valueOf", null, -1),
+                StackTraceElement("org.example.ClassTestHelpers", "shouldBeBig", null, -1)
+        )
+
+        val frame = finder({true})(stackTrace)
+
+        assertThat(frame, nullValue())
     }
 }
