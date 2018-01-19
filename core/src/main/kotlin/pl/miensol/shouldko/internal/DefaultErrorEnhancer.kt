@@ -9,7 +9,6 @@ private val globalFileLinesCache = ConcurrentHashMap<Path, List<String>>()
 
 internal class DefaultErrorEnhancer(
         private val fileTree: FileTree = FileTree.currentWorkingDir,
-        private val classLoader: ClassLoader = fileTree.javaClass.classLoader,
         private val fileLinesCache: MutableMap<Path, List<String>> = globalFileLinesCache,
         private val assertionStackTraceElementFinder: AssertionStackTraceElementFinder = CallingPackageStackTraceElementFinder()) : ErrorEnhancer {
 
@@ -17,24 +16,19 @@ internal class DefaultErrorEnhancer(
     override fun <T : Throwable> enhance(exception: T, factory: (msg: String) -> T): T {
         val originalStackTrace = exception.stackTrace
         val assertionFrame = assertionStackTraceElementFinder(originalStackTrace.toList())
-        return when {
-            assertionFrame == null -> exception
-            assertionFrame.fileName.isNullOrEmpty() -> exception
-            else -> {
-                val assertionValueSource = findAssertionContext(assertionFrame, classLoader, fileTree)
-                if (assertionValueSource != null) {
-                    val newMessage = assertionValueSource.source + " " + exception.message
-                    factory(newMessage).apply {
-                        this.stackTrace = originalStackTrace
-                    }
-                } else exception
+        val assertionValueSource = assertionFrame?.fileName?.let { findAssertionContext(assertionFrame, fileTree) }
+        return if (assertionValueSource != null) {
+            val newMessage = assertionValueSource.source + " " + exception.message
+            factory(newMessage).apply {
+                this.stackTrace = originalStackTrace
             }
-        }
+        } else exception
     }
 
-    private fun findAssertionContext(assertionFrame: StackTraceElement, classLoader: ClassLoader, fileTree: FileTree): AssertionContext? {
-        val fileLeafPath = leafPathForFrame(assertionFrame, classLoader)
-        val sourceLine = findSourceLine(fileTree, fileLeafPath, assertionFrame)
+    private fun findAssertionContext(assertionFrame: StackTraceElement, fileTree: FileTree): AssertionContext? {
+        val fileLeafPath = pathForFrame(assertionFrame)
+        val sourceLine = fileLeafPath?.let { findSourceLine(fileTree, fileLeafPath, assertionFrame) }
+
         return if (sourceLine.isNullOrEmpty()) {
             null
         } else {
@@ -57,22 +51,23 @@ internal class DefaultErrorEnhancer(
                 ?.trim()
     }
 
-    private fun leafPathForFrame(assertionFrame: StackTraceElement, classLoader: ClassLoader): Path {
-        val className = assertionFrame.className
-        val packageNameParts = packageName(classLoader, className)
-                .split('.')
-                .filterNot { it.isEmpty() }
+    private fun pathForFrame(assertionFrame: StackTraceElement): Path? {
+        val assertionFileName = assertionFrame.fileName
 
-        return if (packageNameParts.isEmpty()) {
-            Paths.get(assertionFrame.fileName)
-        } else {
-            val firstPathComponent = packageNameParts.first()
-            val remainingPathComponents = packageNameParts.drop(1) + listOf(assertionFrame.fileName)
-            Paths.get(firstPathComponent, *remainingPathComponents.toTypedArray())
-        }
+        return if (!assertionFileName.isNullOrEmpty()) {
+            val packageNameParts = packageName(assertionFrame.className)
+                    ?.split('.')
+                    ?.filterNot { it.isEmpty() }
+
+            return if (packageNameParts == null || packageNameParts.isEmpty()) {
+                Paths.get(assertionFileName)
+            } else {
+                val firstPathComponent = packageNameParts.first()
+                val remainingPathComponents = packageNameParts.drop(1) + listOf(assertionFileName)
+                Paths.get(firstPathComponent, *remainingPathComponents.toTypedArray())
+            }
+        } else null
     }
 
-    private fun packageName(classLoader: ClassLoader, className: String): String {
-        return classLoader.loadClass(className).`package`.name
-    }
+
 }
