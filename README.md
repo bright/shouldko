@@ -34,5 +34,21 @@ Expected: <true>
      but: was <false>
 ```
 
+## Installation
 
+Register bintray maven repository:
+
+```groovy
+repositories {
+    maven {
+        url  "https://dl.bintray.com/brightinventions/maven" 
+    }
+}
+```
+
+And add 'pl.miensol.shouldko:hamcrest' to your test implementation dependencies:
+
+```groovy
+compile 'pl.miensol.shouldko:hamcrest:0.1.2'
+```
 

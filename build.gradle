@@ -59,7 +59,7 @@ subprojects {
 
 apply plugin: 'maven-publish'
 
-group "pl.miensol.shoudko"
+group "pl.miensol.shouldko"
 
 publishing {
     publications {
