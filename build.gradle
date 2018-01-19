@@ -90,6 +90,7 @@ bintray {
     pkg {
         repo = 'maven'
         name = 'shouldko'
+        desc = 'Adds source line to tests assertion messages'
         userOrg = 'brightinventions'
         licenses = ['MIT']
         vcsUrl = 'https://github.com/bright/shouldko.git'
