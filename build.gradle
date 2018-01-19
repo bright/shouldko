@@ -93,7 +93,7 @@ bintray {
         userOrg = 'brightinventions'
         licenses = ['MIT']
         vcsUrl = 'https://github.com/bright/shouldko.git'
-        labels = ['tests', 'hamcrest', 'junit', 'tests']
+        labels = ['tests', 'hamcrest', 'junit']
     }
 }
 
