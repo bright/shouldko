@@ -3,14 +3,14 @@ package pl.miensol.shouldko.internal
 
 class CallingPackageStackTraceElementFinder(private val callingPackageMatcher: (String) -> Boolean = { true }) : AssertionStackTraceElementFinder {
     override fun invoke(stackTrace: List<StackTraceElement>): StackTraceElement? {
-        var reachedShouldKo = false
-        stackTrace.forEach { stackTraceElement ->
-            reachedShouldKo = reachedShouldKo || isFromShouldKo(stackTraceElement)
-            if (reachedShouldKo && !isFromShouldKo(stackTraceElement) && callingPackageMatcher(stackTraceElement.className)) {
-                return stackTraceElement
-            }
-        }
-        return null
+        return stackTrace.asSequence()
+                .dropWhile { !isFromShouldKo(it) }
+                // we reached should ko
+                .dropWhile { isFromShouldKo(it) }
+                // we are outside of should ko
+                .dropWhile { !callingPackageMatcher(it.className) }
+                // we are outside of client matcher helpers
+                .firstOrNull()
     }
 
     private fun isFromShouldKo(stackTraceElement: StackTraceElement) =
