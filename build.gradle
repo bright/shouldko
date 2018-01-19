@@ -94,3 +94,9 @@ bintray {
         labels = ['tests', 'hamcrest', 'junit', 'tests']
     }
 }
+
+afterEvaluate {
+    tasks.bintrayUpload.doLast {
+        logger.lifecycle("Uploaded artifacts to bintray at version $version")
+    }
+}
