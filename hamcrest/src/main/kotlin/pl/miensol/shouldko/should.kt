@@ -11,7 +11,11 @@ fun <T> T.should(matcher: Matcher<T>): T = apply {
     }
 }
 
+fun <T> T.shouldBe(matcher: Matcher<T>): T = should(matcher)
+
 fun <T> T.shouldNot(matcher: Matcher<T>): T = should(Matchers.not(matcher))
+
+fun <T> T.shouldNotBe(matcher: Matcher<T>): T = shouldNot(matcher)
 
 fun <T> T.shouldEqual(expected: T): T = should(Matchers.equalTo(expected))
 
