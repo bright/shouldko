@@ -14,6 +14,7 @@ internal class DefaultErrorEnhancer(
         private val classLoader: ClassLoader = fileTree.javaClass.classLoader,
         private val fileLinesCache: MutableMap<Path, List<String>> = globalFileLinesCache) : ErrorEnhancer {
 
+
     override fun <T : Throwable> enhance(exception: T, factory: (msg: String) -> T): T {
         return tryEnhanceError(exception, fileTree, classLoader, factory)
     }
@@ -24,26 +25,44 @@ internal class DefaultErrorEnhancer(
                                                 newError: (msg: String) -> T): T {
         val originalStackTrace = originalError.stackTrace
 
-        val assertionFrame = findCallingStackFrame(originalStackTrace)
+        val assertionFrame = findCallingAssertionStackElement(originalStackTrace)
 
         return when {
             assertionFrame == null -> originalError
             assertionFrame.fileName.isNullOrEmpty() -> originalError
             else -> {
-                val fileLeafPath = leafPathForFrame(assertionFrame, classLoader)
-                val sourceLine = findSourceLine(fileTree, fileLeafPath, assertionFrame)
-                if (sourceLine.isNullOrEmpty()) {
-                    originalError
-                } else {
-                    val shouldIndex = sourceLine!!.indexOf(".should")
-                    val sourceLineNoShould = if (shouldIndex == -1) sourceLine else sourceLine.substring(0, shouldIndex)
-                    val newMessage = sourceLineNoShould + " " + originalError.message
+                val assertionValueSource = findAssertionContext(assertionFrame, classLoader, fileTree)
+                return if (assertionValueSource != null) {
+                    val newMessage = assertionValueSource.source + " " + originalError.message
                     newError(newMessage).apply {
                         stackTrace = originalStackTrace
                     }
-                }
+                } else originalError
             }
         }
+    }
+
+    private fun findAssertionContext(assertionFrame: StackTraceElement, classLoader: ClassLoader, fileTree: FileTree): AssertionContext? {
+        val fileLeafPath = leafPathForFrame(assertionFrame, classLoader)
+        val sourceLine = findSourceLine(fileTree, fileLeafPath, assertionFrame)
+        return if (sourceLine.isNullOrEmpty()) {
+            null
+        } else {
+            val shouldIndex = sourceLine!!.indexOf(".should")
+            val sourceLineNoShould = if (shouldIndex == -1) sourceLine else sourceLine.substring(0, shouldIndex)
+            AssertionContext(fileLeafPath, sourceLineNoShould, IntRange(assertionFrame.lineNumber, assertionFrame.lineNumber + 1))
+        }
+    }
+
+    private fun findCallingAssertionStackElement(stackTrace: Array<out StackTraceElement>?): StackTraceElement? {
+        var reachedShouldKo = false
+        stackTrace?.forEach { stackTraceElement ->
+            reachedShouldKo = reachedShouldKo || stackTraceElement.className.startsWith(PackageName)
+            if (reachedShouldKo && !stackTraceElement.className.startsWith(PackageName)) {
+                return stackTraceElement
+            }
+        }
+        return null
     }
 
     private fun findSourceLine(fileTree: FileTree, fileLeafPath: Path, assertionFrame: StackTraceElement): String? {
@@ -75,16 +94,5 @@ internal class DefaultErrorEnhancer(
 
     private fun packageName(classLoader: ClassLoader, className: String): String {
         return classLoader.loadClass(className).`package`.name
-    }
-
-    private fun findCallingStackFrame(stackTrace: Array<out StackTraceElement>?): StackTraceElement? {
-        var reachedShouldKo = false
-        stackTrace?.forEach { stackTraceElement ->
-            reachedShouldKo = reachedShouldKo || stackTraceElement.className.startsWith(PackageName)
-            if (reachedShouldKo && !stackTraceElement.className.startsWith(PackageName)) {
-                return stackTraceElement
-            }
-        }
-        return null
     }
 }
