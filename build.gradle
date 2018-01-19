@@ -33,11 +33,6 @@ allprojects {
     dependencies {
         testRuntime("org.junit.jupiter:junit-jupiter-engine:$jupiter_version")
     }
-
-    task sourcesJar(type:Jar, dependsOn:classes) {
-        from sourceSets.main.allSource
-        classifier = 'sources'
-    }
 }
 
 subprojects {
@@ -51,8 +46,14 @@ subprojects {
     compileKotlin {
         kotlinOptions.jvmTarget = "1.8"
     }
+
     compileTestKotlin {
         kotlinOptions.jvmTarget = "1.8"
+    }
+
+    task sourcesJar(type: Jar, dependsOn: classes) {
+        from sourceSets.main.allSource
+        classifier = 'sources'
     }
 }
 
@@ -70,6 +71,7 @@ publishing {
             artifactId project.name
             version project.version
         }
+
         core(MavenPublication) {
             def project = project(':core')
             from project.components.java
