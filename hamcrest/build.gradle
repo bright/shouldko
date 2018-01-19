@@ -1,4 +1,4 @@
 dependencies {
-    compile project(':core')
+    implementation project(':core')
     compile group: 'org.hamcrest', name: 'hamcrest-library', version: '1.3'
 }
