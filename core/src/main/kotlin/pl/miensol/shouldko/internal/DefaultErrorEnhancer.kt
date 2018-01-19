@@ -5,39 +5,29 @@ import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.concurrent.ConcurrentHashMap
 
-private const val PackageName = "pl.miensol.shouldko"
-
 private val globalFileLinesCache = ConcurrentHashMap<Path, List<String>>()
 
 internal class DefaultErrorEnhancer(
         private val fileTree: FileTree = FileTree.currentWorkingDir,
         private val classLoader: ClassLoader = fileTree.javaClass.classLoader,
-        private val fileLinesCache: MutableMap<Path, List<String>> = globalFileLinesCache) : ErrorEnhancer {
+        private val fileLinesCache: MutableMap<Path, List<String>> = globalFileLinesCache,
+        private val assertionStackTraceElementFinder: AssertionStackTraceElementFinder = CallingPackageStackTraceElementFinder()) : ErrorEnhancer {
 
 
     override fun <T : Throwable> enhance(exception: T, factory: (msg: String) -> T): T {
-        return tryEnhanceError(exception, fileTree, classLoader, factory)
-    }
-
-    private fun <T : Throwable> tryEnhanceError(originalError: T,
-                                                fileTree: FileTree = FileTree.currentWorkingDir,
-                                                classLoader: ClassLoader = fileTree.javaClass.classLoader,
-                                                newError: (msg: String) -> T): T {
-        val originalStackTrace = originalError.stackTrace
-
-        val assertionFrame = findCallingAssertionStackElement(originalStackTrace)
-
+        val originalStackTrace = exception.stackTrace
+        val assertionFrame = assertionStackTraceElementFinder(originalStackTrace.toList())
         return when {
-            assertionFrame == null -> originalError
-            assertionFrame.fileName.isNullOrEmpty() -> originalError
+            assertionFrame == null -> exception
+            assertionFrame.fileName.isNullOrEmpty() -> exception
             else -> {
                 val assertionValueSource = findAssertionContext(assertionFrame, classLoader, fileTree)
-                return if (assertionValueSource != null) {
-                    val newMessage = assertionValueSource.source + " " + originalError.message
-                    newError(newMessage).apply {
-                        stackTrace = originalStackTrace
+                if (assertionValueSource != null) {
+                    val newMessage = assertionValueSource.source + " " + exception.message
+                    factory(newMessage).apply {
+                        this.stackTrace = originalStackTrace
                     }
-                } else originalError
+                } else exception
             }
         }
     }
@@ -54,16 +44,6 @@ internal class DefaultErrorEnhancer(
         }
     }
 
-    private fun findCallingAssertionStackElement(stackTrace: Array<out StackTraceElement>?): StackTraceElement? {
-        var reachedShouldKo = false
-        stackTrace?.forEach { stackTraceElement ->
-            reachedShouldKo = reachedShouldKo || stackTraceElement.className.startsWith(PackageName)
-            if (reachedShouldKo && !stackTraceElement.className.startsWith(PackageName)) {
-                return stackTraceElement
-            }
-        }
-        return null
-    }
 
     private fun findSourceLine(fileTree: FileTree, fileLeafPath: Path, assertionFrame: StackTraceElement): String? {
         return fileTree.findByLeafPath(fileLeafPath)
