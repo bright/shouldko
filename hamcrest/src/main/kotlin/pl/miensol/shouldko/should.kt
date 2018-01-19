@@ -3,10 +3,10 @@ package pl.miensol.shouldko
 import org.hamcrest.Matcher
 import org.hamcrest.MatcherAssert
 import org.hamcrest.Matchers
-import pl.miensol.shouldko.internal.prependTopStackFrameSourceLine
+import pl.miensol.shouldko.internal.addSourceLineToAssertionError
 
 fun <T> T.should(matcher: Matcher<T>): T = apply {
-    prependTopStackFrameSourceLine {
+    addSourceLineToAssertionError {
         MatcherAssert.assertThat(this, matcher)
     }
 }
