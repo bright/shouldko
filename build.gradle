@@ -33,6 +33,11 @@ allprojects {
     dependencies {
         testRuntime("org.junit.jupiter:junit-jupiter-engine:$jupiter_version")
     }
+
+    task sourcesJar(type:Jar, dependsOn:classes) {
+        from sourceSets.main.allSource
+        classifier = 'sources'
+    }
 }
 
 subprojects {
@@ -60,6 +65,15 @@ publishing {
         hamcrest(MavenPublication) {
             def project = project(':hamcrest')
             from project.components.java
+            artifact project.sourcesJar
+            groupId group
+            artifactId project.name
+            version project.version
+        }
+        core(MavenPublication) {
+            def project = project(':core')
+            from project.components.java
+            artifact project.sourcesJar
             groupId group
             artifactId project.name
             version project.version
@@ -70,7 +84,7 @@ publishing {
 bintray {
     user = project.hasProperty('bintrayUser') ? project.property('bintrayUser') : System.getenv('BINTRAY_USER')
     key = project.hasProperty('bintrayApiKey') ? project.property('bintrayApiKey') : System.getenv('BINTRAY_API_KEY')
-    publications = ['hamcrest']
+    publications = ['core', 'hamcrest']
     pkg {
         repo = 'maven'
         name = 'shouldko'
