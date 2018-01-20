@@ -2,7 +2,7 @@
 
 ShouldKO is tiny wrapper around assertion libraries to improve the error messages.
 
-[![Build Status](https://travis-ci.org/miensol/shouldko.svg?branch=master)](https://travis-ci.org/miensol/shouldko)
+[![Build Status](https://travis-ci.org/bright/shouldko.svg?branch=master)](https://travis-ci.org/bright/shouldko)
 
 ## Hamcrest
 
