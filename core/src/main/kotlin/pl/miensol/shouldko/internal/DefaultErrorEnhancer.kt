@@ -26,15 +26,19 @@ internal class DefaultErrorEnhancer(
     }
 
     private fun findAssertionContext(assertionFrame: StackTraceElement, fileTree: FileTree): AssertionContext? {
-        val fileLeafPath = pathForFrame(assertionFrame)
-        val sourceLine = fileLeafPath?.let { findSourceLine(fileTree, fileLeafPath, assertionFrame) }
+        return try {
+            val fileLeafPath = pathForFrame(assertionFrame)
+            val sourceLine = fileLeafPath?.let { findSourceLine(fileTree, fileLeafPath, assertionFrame) }
 
-        return if (sourceLine.isNullOrEmpty()) {
+            if (sourceLine.isNullOrEmpty()) {
+                null
+            } else {
+                val shouldIndex = sourceLine!!.indexOf(".should")
+                val sourceLineNoShould = if (shouldIndex == -1) sourceLine else sourceLine.substring(0, shouldIndex)
+                AssertionContext(fileLeafPath, sourceLineNoShould, IntRange(assertionFrame.lineNumber, assertionFrame.lineNumber + 1))
+            }
+        } catch (e: NoClassDefFoundError) {//Android does not have Path
             null
-        } else {
-            val shouldIndex = sourceLine!!.indexOf(".should")
-            val sourceLineNoShould = if (shouldIndex == -1) sourceLine else sourceLine.substring(0, shouldIndex)
-            AssertionContext(fileLeafPath, sourceLineNoShould, IntRange(assertionFrame.lineNumber, assertionFrame.lineNumber + 1))
         }
     }
 
