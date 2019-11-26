@@ -30,3 +30,5 @@ fun <T> Iterable<T>.shouldNotContain(item: T): Iterable<T> = shouldNot(Matchers.
 fun String.shouldContain(substring: String): String = should(Matchers.containsString(substring))
 
 fun String.shouldNotContain(substring: String): String = shouldNot(Matchers.containsString(substring))
+
+fun <T : Comparable<T>> T.shouldEqualCompared(expected: T): T = should(Matchers.comparesEqualTo(expected))

@@ -6,6 +6,7 @@ import org.hamcrest.Matchers.equalTo
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import pl.miensol.shouldko.*
+import java.math.BigDecimal
 
 class AssertionTests {
     @Test
@@ -106,6 +107,15 @@ class AssertionTests {
         }
 
         assertThat(error.message, containsString("""("ala" + "ma kota")"""))
+    }
+
+    @Test
+    fun `comparable equal`() {
+        val error = Assertions.assertThrows(AssertionError::class.java) {
+            BigDecimal("9").shouldEqualCompared(BigDecimal.TEN)
+        }
+
+        assertThat(error.message, containsString("""BigDecimal("9")"""))
     }
 
     @Suppress("NOTHING_TO_INLINE")
