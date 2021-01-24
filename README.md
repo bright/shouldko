@@ -51,6 +51,6 @@ repositories {
 And add 'pl.miensol.shouldko:hamcrest' to your test implementation dependencies:
 
 ```groovy
-compile 'pl.miensol.shouldko:hamcrest:x.y.z'
+testImplementation 'pl.miensol.shouldko:hamcrest:0.2.2'
 ```
 
